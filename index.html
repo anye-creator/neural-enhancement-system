@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>机器增强的人及混合神经系统 · 复杂系统工程架构</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg-primary: #0a0f1e;
+    --bg-secondary: #111827;
+    --bg-card: #1a2236;
+    --text-primary: #e8edf5;
+    --text-secondary: #9aa8bd;
+    --accent-cyan: #22d3ee;
+    --accent-blue: #3b82f6;
+    --accent-purple: #8b5cf6;
+    --accent-pink: #ec4899;
+    --accent-green: #10b981;
+    --accent-orange: #f59e0b;
+    --border: #2a3548;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+  /* Hero */
+  .hero {
+    min-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 60px 20px;
+    position: relative;
+    background: radial-gradient(ellipse at top, rgba(34,211,238,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at bottom, rgba(139,92,246,0.1) 0%, transparent 60%);
+  }
+  .hero-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border: 1px solid var(--accent-cyan);
+    border-radius: 20px;
+    font-size: 13px;
+    color: var(--accent-cyan);
+    margin-bottom: 24px;
+    letter-spacing: 1px;
+  }
+  .hero h1 {
+    font-size: clamp(32px, 6vw, 64px);
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #fff 0%, var(--accent-cyan) 50%, var(--accent-purple) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .hero .subtitle {
+    font-size: clamp(16px, 2.5vw, 22px);
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin-bottom: 40px;
+  }
+  .hero-stats {
+    display: flex;
+    gap: 40px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+  }
+  .stat-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+  /* 层级总览条 */
+  .level-overview {
+    background: var(--bg-secondary);
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .level-overview-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .section-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 32px;
+  }
+  .level-flow {
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+  .level-node {
+    flex: 1;
+    min-width: 140px;
+    padding: 20px 12px;
+    text-align: center;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.3s;
+  }
+  .level-node:hover { transform: translateY(-4px); }
+  .level-node .num {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .level-node .name-cn { font-size: 15px; font-weight: 600; }
+  .level-node .name-en { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  /* 颜色分配 */
+  .lv1 .num { background: rgba(34,211,238,0.2); color: var(--accent-cyan); border: 2px solid var(--accent-cyan); }
+  .lv2 .num { background: rgba(59,130,246,0.2); color: var(--accent-blue); border: 2px solid var(--accent-blue); }
+  .lv3 .num { background: rgba(139,92,246,0.2); color: var(--accent-purple); border: 2px solid var(--accent-purple); }
+  .lv4 .num { background: rgba(236,72,153,0.2); color: var(--accent-pink); border: 2px solid var(--accent-pink); }
+  .lv5 .num { background: rgba(16,185,129,0.2); color: var(--accent-green); border: 2px solid var(--accent-green); }
+  .lv6 .num { background: rgba(245,158,11,0.2); color: var(--accent-orange); border: 2px solid var(--accent-orange); }
+  /* 箭头连接 */
+  .level-node:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    right: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 20px;
+    color: var(--text-secondary);
+    z-index: 1;
+  }
+  /* 详细层级区块 */
+  .detail-section {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 20px;
+  }
+  .level-block {
+    margin-bottom: 80px;
+    border-radius: 16px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .level-block::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+  }
+  .level-block.lv1 { background: linear-gradient(135deg, rgba(34,211,238,0.08), transparent); }
+  .level-block.lv1::before { background: var(--accent-cyan); }
+  .level-block.lv2 { background: linear-gradient(135deg, rgba(59,130,246,0.08), transparent); }
+  .level-block.lv2::before { background: var(--accent-blue); }
+  .level-block.lv3 { background: linear-gradient(135deg, rgba(139,92,246,0.08), transparent); }
+  .level-block.lv3::before { background: var(--accent-purple); }
+  .level-block.lv4 { background: linear-gradient(135deg, rgba(236,72,153,0.08), transparent); }
+  .level-block.lv4::before { background: var(--accent-pink); }
+  .level-block.lv5 { background: linear-gradient(135deg, rgba(16,185,129,0.08), transparent); }
+  .level-block.lv5::before { background: var(--accent-green); }
+  .level-block.lv6 { background: linear-gradient(135deg, rgba(245,158,11,0.08), transparent); }
+  .level-block.lv6::before { background: var(--accent-orange); }
+  .level-header {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .level-tag {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .lv1 .level-tag { background: rgba(34,211,238,0.2); color: var(--accent-cyan); }
+  .lv2 .level-tag { background: rgba(59,130,246,0.2); color: var(--accent-blue); }
+  .lv3 .level-tag { background: rgba(139,92,246,0.2); color: var(--accent-purple); }
+  .lv4 .level-tag { background: rgba(236,72,153,0.2); color: var(--accent-pink); }
+  .lv5 .level-tag { background: rgba(16,185,129,0.2); color: var(--accent-green); }
+  .lv6 .level-tag { background: rgba(245,158,11,0.2); color: var(--accent-orange); }
+  .level-title {
+    font-size: 28px;
+    font-weight: 700;
+  }
+  .level-desc {
+    color: var(--text-secondary);
+    font-size: 15px;
+    margin-bottom: 28px;
+    max-width: 800px;
+  }
+  /* 卡片网格 */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+  }
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.2);
+  }
+  .card-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    font-size: 20px;
+  }
+  .lv1 .card-icon { background: rgba(34,211,238,0.15); color: var(--accent-cyan); }
+  .lv2 .card-icon { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+  .lv3 .card-icon { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
+  .lv4 .card-icon { background: rgba(236,72,153,0.15); color: var(--accent-pink); }
+  .lv5 .card-icon { background: rgba(16,185,129,0.15); color: var(--accent-green); }
+  .lv6 .card-icon { background: rgba(245,158,11,0.15); color: var(--accent-orange); }
+  .card h3 {
+    font-size: 17px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .card ul {
+    list-style: none;
+    margin-top: 10px;
+  }
+  .card ul li {
+    font-size: 13px;
+    color: var(--text-secondary);
+    padding: 3px 0;
+    padding-left: 14px;
+    position: relative;
+  }
+  .card ul li::before {
+    content: "·";
+    position: absolute;
+    left: 0;
+    color: var(--text-secondary);
+  }
+  /* 数据流示意图 */
+  .flow-diagram {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 30px;
+    margin-top: 30px;
+    text-align: center;
+  }
+  .flow-diagram h4 {
+    font-size: 15px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+  }
+  .flow-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .flow-node {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+  }
+  .flow-arrow {
+    color: var(--text-secondary);
+    font-size: 18px;
+  }
+  /* 页脚 */
+  .footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+  /* 响应式 */
+  @media (max-width: 768px) {
+    .level-node:not(:last-child)::after { display: none; }
+    .level-flow { gap: 12px; }
+    .level-block { padding: 24px; }
+    .hero-stats { gap: 20px; }
+    .stat-num { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Hero 区 -->
+<section class="hero">
+  <div class="hero-badge">Complex Systems Engineering · 2026</div>
+  <h1>机器增强的人<br>及混合神经系统</h1>
+  <p class="subtitle">
+    以"人"为核心、以神经信号为纽带的人机深度融合系统——
+    从战略任务到芯片级模块的六层架构全景解析
+  </p>
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">6</div>
+      <div class="stat-label">系统层级</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">24+</div>
+      <div class="stat-label">功能模块</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">3</div>
+      <div class="stat-label">核心应用域</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">∞</div>
+      <div class="stat-label">演化可能性</div>
+    </div>
+  </div>
+</section>
+
+<!-- 层级总览 -->
+<section class="level-overview">
+  <div class="level-overview-inner">
+    <h2 class="section-title">六层系统架构总览</h2>
+    <div class="level-flow">
+      <div class="level-node lv1">
+        <div class="num">1</div>
+        <div class="name-cn">任务</div>
+        <div class="name-en">Mission</div>
+      </div>
+      <div class="level-node lv2">
+        <div class="num">2</div>
+        <div class="name-cn">体系</div>
+        <div class="name-en">System of Systems</div>
+      </div>
+      <div class="level-node lv3">
+        <div class="num">3</div>
+        <div class="name-cn">整机</div>
+        <div class="name-en">Platforms</div>
+      </div>
+      <div class="level-node lv4">
+        <div class="num">4</div>
+        <div class="name-cn">系统</div>
+        <div class="name-en">Systems</div>
+      </div>
+      <div class="level-node lv5">
+        <div class="num">5</div>
+        <div class="name-cn">子系统</div>
+        <div class="name-en">Sub-systems</div>
+      </div>
+      <div class="level-node lv6">
+        <div class="num">6</div>
+        <div class="name-cn">模块</div>
+        <div class="name-en">Modules</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 详细层级 -->
+<section class="detail-section">
+
+  <!-- 第1层：任务 Mission -->
+  <div class="level-block lv1">
+    <div class="level-header">
+      <span class="level-tag">Level 1 · Mission</span>
+      <h2 class="level-title">任务层：为什么要增强人？</h2>
+    </div>
+    <p class="level-desc">
+      顶层任务定义了人机混合神经系统存在的根本目的——突破人体生理极限、恢复受损功能、拓展人类在极端环境下的生存与作业能力。
+    </p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🧠</div>
+        <h3>认知增强任务</h3>
+        <p>突破人脑信息处理带宽，实现记忆扩展、注意力分配加速、多语言实时转译与快速决策辅助。</p>
+        <ul>
+          <li>脑容量扩展：外存记忆库直连</li>
+          <li>多任务并行处理增强</li>
+          <li>学习效率提升（神经可塑性强化）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">💪</div>
+        <h3>体能增强任务</h3>
+        <p>通过外骨骼与肌肉辅助，使人具备超人的力量、耐力、速度与负重能力。</p>
+        <ul>
+          <li>负重能力提升 5-10 倍</li>
+          <li>长时间作业疲劳抑制</li>
+          <li>跳跃/奔跑/攀爬能力增强</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏥</div>
+        <h3>康复医疗任务</h3>
+        <p>帮助脊髓损伤、截肢、中风等患者重建运动与感知功能，回归正常生活。</p>
+        <ul>
+          <li>瘫痪患者运动功能重建</li>
+          <li>假肢/义肢自然化控制</li>
+          <li>卒中后神经康复训练</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛡️</div>
+        <h3>特种作业任务</h3>
+        <p>在深空、深海、高危工业、战场等极端环境中保障人员安全与作业效能。</p>
+        <ul>
+          <li>航天/深潜生命维持增强</li>
+          <li>排爆/救援现场防护增强</li>
+          <li>战场单兵作战能力升级</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第2层：体系 SoS -->
+  <div class="level-block lv2">
+    <div class="level-header">
+      <span class="level-tag">Level 2 · System of Systems</span>
+      <h2 class="level-title">体系层：多系统协同的生态</h2>
+    </div>
+    <p class="level-desc">
+      体系层是多个独立又互联的人机混合系统组成的超级生态——个体的增强设备之间、人与云端AI、人与群体之间形成协同网络。
+    </p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🌐</div>
+        <h3>人机混合智能体系</h3>
+        <p>人类直觉与机器算力深度融合的分布式智能体系，每个"增强人"既是节点也是终端。</p>
+        <ul>
+          <li>群体意识共享网络</li>
+          <li>云端大模型即时调用</li>
+          <li>专家知识神经直连</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔗</div>
+        <h3>神经互联互通体系</h3>
+        <p>人与人之间通过神经接口直接传递意图、情绪与记忆片段，实现"心有灵犀"级沟通。</p>
+        <ul>
+          <li>脑对脑直接通信（B2B）</li>
+          <li>协同作业神经同步</li>
+          <li>共享意识工作空间</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🏭</div>
+        <h3>应用域协同体系</h3>
+        <p>医疗康复、工业制造、国防安全、深空探索四大领域的增强设备数据互通、能力互补。</p>
+        <ul>
+          <li>康复数据反哺工业设计</li>
+          <li>航天技术下放医疗</li>
+          <li>国防级可靠性民用转化</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">📊</div>
+        <h3>伦理治理体系</h3>
+        <p>确保增强技术不越界——神经隐私、身份认同、公平准入、安全边界的制度性框架。</p>
+        <ul>
+          <li>神经数据所有权保护</li>
+          <li>增强等级伦理规范</li>
+          <li>紧急熔断与控制权回收</li>
+        </ul>
+      </div>
+    </div>
+    <div class="flow-diagram">
+      <h4>体系层协同关系示意</h4>
+      <div class="flow-row">
+        <div class="flow-node">增强个体 A</div>
+        <div class="flow-arrow">⇄</div>
+        <div class="flow-node">神经云端</div>
+        <div class="flow-arrow">⇄</div>
+        <div class="flow-node">增强个体 B</div>
+        <div class="flow-arrow">⇄</div>
+        <div class="flow-node">增强个体 C</div>
+      </div>
+      <div style="margin-top:16px;color:var(--text-secondary);font-size:13px;">
+        多节点神经Mesh网络 · 分布式认知 · 群体智能涌现
+      </div>
+    </div>
+  </div>
+
+  <!-- 第3层：整机 Platforms -->
+  <div class="level-block lv3">
+    <div class="level-header">
+      <span class="level-tag">Level 3 · Platforms</span>
+      <h2 class="level-title">整机层：人所穿戴/植入的平台</h2>
+    </div>
+    <p class="level-desc">
+      整机层是用户直接接触的物理载体——从外骨骼到脑机接口，不同形态的平台对应不同任务场景。
+    </p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🦾</div>
+        <h3>动力外骨骼平台</h3>
+        <p>穿戴式全身/半身外骨骼，提供力量增强与负重辅助，用于工业、军事、物流场景。</p>
+        <ul>
+          <li>全身液压外骨骼</li>
+          <li>下肢助力外骨骼</li>
+          <li>上肢精细作业外骨骼</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🖐️</div>
+        <h3>智能神经假肢平台</h3>
+        <p>基于肌电/神经信号控制的智能义肢，具备触觉反馈与运动意图识别能力。</p>
+        <ul>
+          <li>肌电假手（多自由度）</li>
+          <li>神经接口下肢假肢</li>
+          <li>仿生眼/视网膜植入</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎧</div>
+        <h3>脑机接口头戴平台</h3>
+        <p>非侵入式/半侵入式脑电采集头戴设备，用于认知增强、注意力训练与意念控制。</p>
+        <ul>
+          <li>EEG 干电极头环</li>
+          <li>fNIRS 近红外成像帽</li>
+          <li>半侵入式皮层电极阵</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🦿</div>
+        <h3>康复机器人平台</h3>
+        <p>用于神经康复的训练机器人，通过镜像治疗与被动/主动训练促进神经可塑性。</p>
+        <ul>
+          <li>上肢康复外骨骼</li>
+          <li>下肢步态训练机器人</li>
+          <li>手部精细训练机器人</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第4层：系统 Systems -->
+  <div class="level-block lv4">
+    <div class="level-header">
+      <span class="level-tag">Level 4 · Systems</span>
+      <h2 class="level-title">系统层：整机的功能系统划分</h2>
+    </div>
+    <p class="level-desc">
+      每台整机平台由若干功能系统协同工作——感知、决策、执行、反馈、能量、安全，构成完整的闭环控制。
+    </p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">👁️</div>
+        <h3>神经感知系统</h3>
+        <p>采集大脑/肌肉/皮肤的生物电信号与生理信号，解码为机器可识别的意图。</p>
+        <ul>
+          <li>脑电信号采集（EEG/ECoG）</li>
+          <li>肌电信号采集（sEMG）</li>
+          <li>生理信号（心率/皮电）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧮</div>
+        <h3>智能决策系统</h3>
+        <p>基于意图解码与环境感知，实时规划下一步动作，平衡人机控制权。</p>
+        <ul>
+          <li>意图识别与分类</li>
+          <li>动作规划与轨迹优化</li>
+          <li>人机协同权限仲裁</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <h3>运动执行系统</h3>
+        <p>将决策指令转化为物理运动——驱动电机、液压或人工肌肉产生精确力与位移。</p>
+        <ul>
+          <li>伺服电机驱动阵列</li>
+          <li>液压/气动执行器</li>
+          <li>人工肌肉/形状记忆合金</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🤝</div>
+        <h3>触觉反馈系统</h3>
+        <p>将外部环境信息反向传递给神经系统，让用户"感觉"到物体形状、纹理与温度。</p>
+        <ul>
+          <li>振动触觉阵列</li>
+          <li>电流感觉刺激（TENS）</li>
+          <li>神经内直接刺激</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔋</div>
+        <h3>能量管理系统</h3>
+        <p>负责电源管理、功耗优化与热管理，确保设备长时间稳定运行。</p>
+        <ul>
+          <li>电池管理（BMS）</li>
+          <li>动态功耗调节</li>
+          <li>散热与温控</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚨</div>
+        <h3>安全保障系统</h3>
+        <p>多重安全冗余——异常检测、紧急停止、权限降级，确保人机交互不出危险。</p>
+        <ul>
+          <li>碰撞检测与力限幅</li>
+          <li>急停与安全制动</li>
+          <li>神经信号异常熔断</li>
+        </ul>
+      </div>
+    </div>
+    <div class="flow-diagram">
+      <h4>感知-决策-执行-反馈 闭环</h4>
+      <div class="flow-row">
+        <div class="flow-node">感知系统</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">决策系统</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">执行系统</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">环境交互</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-node">反馈系统</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第5层：子系统 Sub-systems -->
+  <div class="level-block lv5">
+    <div class="level-header">
+      <span class="level-tag">Level 5 · Sub-systems</span>
+      <h2 class="level-title">子系统层：功能拆解</h2>
+    </div>
+    <p class="level-desc">
+      每个功能系统进一步拆解为子系统——例如感知系统拆为信号采集、信号放大降噪、解码算法等独立子系统。
+    </p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📡</div>
+        <h3>信号采集子系统</h3>
+        <p>从人体表面或体内采集原始生物电信号，保证信号质量与穿戴舒适性。</p>
+        <ul>
+          <li>电极阵列布置与阻抗匹配</li>
+          <li>模拟前端（AFE）放大滤波</li>
+          <li>ADC 高速采样</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <h3>信号处理与解码子系统</h3>
+        <p>对原始信号去噪、特征提取，通过机器学习模型解码出用户的运动意图。</p>
+        <ul>
+          <li>实时降噪与伪迹去除</li>
+          <li>特征提取（时域/频域/空域）</li>
+          <li>深度学习意图分类器</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎛️</div>
+        <h3>运动控制子系统</h3>
+        <p>将解码出的意图转化为关节力矩指令，实现柔顺、精确、自然的运动控制。</p>
+        <ul>
+          <li>阻抗/导纳控制</li>
+          <li>关节伺服环（位置/力矩）</li>
+          <li>步态相位识别与切换</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">💬</div>
+        <h3>人机交互通信子系统</h3>
+        <p>负责设备与手机/云端/其他设备的无线通信，以及用户状态的可视化反馈。</p>
+        <ul>
+          <li>低功耗蓝牙（BLE）通信</li>
+          <li>Wi-Fi / 5G 云端同步</li>
+          <li>APP 状态显示与参数调节</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <h3>神经刺激子系统</h3>
+        <p>反向向神经系统输入电流/光信号，实现触觉反馈、疼痛抑制或神经调控。</p>
+        <ul>
+          <li>经皮电刺激（TENS）</li>
+          <li>皮层内微刺激（ICMS）</li>
+          <li>光遗传学刺激接口</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧰</div>
+        <h3>结构与机构子系统</h3>
+        <p>整机的机械结构——骨架、关节、连接件，兼顾轻量化、强度与人机贴合度。</p>
+        <ul>
+          <li>碳纤维复合材料骨架</li>
+          <li>谐波减速器/行星齿轮</li>
+          <li>可调绑带与人体工学贴合</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- 第6层：模块 Modules -->
+  <div class="level-block lv6">
+    <div class="level-header">
+      <span class="level-tag">Level 6 · Modules</span>
+      <h2 class="level-title">模块层：硬件与软件模块</h2>
+    </div>
+    <p class="level-desc">
+      最底层是可独立替换、采购的模块——每一块电路板、每一个传感器、每一段算法固件，都是系统的原子单元。
+    </p>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🔬</div>
+        <h3>电极传感器模块</h3>
+        <p>与人体直接接触的传感前端——干/湿电极、柔性电极阵列、微针电极。</p>
+        <ul>
+          <li>Ag/AgCl 湿电极</li>
+          <li>干电极（弹簧针/织物）</li>
+          <li>皮层微电极阵列（Utah阵列）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">💾</div>
+        <h3>神经解码芯片模块</h3>
+        <p>专用 AI 加速芯片，在端侧实时运行深度学习模型，低功耗完成意图解码。</p>
+        <ul>
+          <li>RISC-V + NPU 定制 SoC</li>
+          <li>CNN/Transformer 推理引擎</li>
+          <li>片上学习与自适应校准</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔩</div>
+        <h3>伺服驱动模块</h3>
+        <p>集成电机、驱动器、编码器的一体化关节模块，即插即用。</p>
+        <ul>
+          <li>无刷直流电机（BLDC）</li>
+          <li>磁性绝对编码器</li>
+          <li>FOC 驱动器板</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">📱</div>
+        <h3>IMU 惯性测量模块</h3>
+        <p>六轴/九轴惯性传感器，测量身体姿态、运动加速度与关节角度。</p>
+        <ul>
+          <li>三轴加速度计</li>
+          <li>三轴陀螺仪</li>
+          <li>三轴磁力计（可选）</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔋</div>
+        <h3>电池与电源模块</h3>
+        <p>高能量密度锂电池组 + BMS，提供数小时续航，支持快充与热插拔。</p>
+        <ul>
+          <li>高密度锂电池组</li>
+          <li>BMS 电池管理芯片</li>
+          <li>USB-C 快充接口</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">📶</div>
+        <h3>无线通信模块</h3>
+        <p>低功耗蓝牙/Wi-Fi/无线Mesh模块，负责设备间与云端的高速数据传输。</p>
+        <ul>
+          <li>BLE 5.x 低功耗蓝牙</li>
+          <li>Wi-Fi 6 / 802.11ax</li>
+          <li>神经Mesh自组网</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛑</div>
+        <h3>安全急停模块</h3>
+        <p>独立于主控制器的硬件安全回路——按下急停按钮立即切断动力输出。</p>
+        <ul>
+          <li>硬件急停按钮</li>
+          <li>看门狗定时器</li>
+          <li>独立安全继电器</li>
+        </ul>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>触觉反馈模块</h3>
+        <p>小型振动马达阵列 / 电刺激电极，贴附于皮肤提供丰富的触觉反馈。</p>
+        <ul>
+          <li>线性谐振致动器（LRA）</li>
+          <li>偏心旋转马达（ERM）</li>
+          <li>TENS 电刺激电极片</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<!-- 总结 -->
+<section style="max-width:1200px;margin:0 auto;padding:0 20px 80px;">
+  <div style="background:linear-gradient(135deg, rgba(34,211,238,0.1), rgba(139,92,246,0.1));border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;">
+    <h2 style="font-size:24px;margin-bottom:16px;">从人到人-机-云的闭环</h2>
+    <p style="color:var(--text-secondary);max-width:700px;margin:0 auto;">
+      六层架构自顶向下定义任务与价值，自底向上实现物理与算法支撑。
+      每一层既是上一层的实现，也是下一层的约束——这正是复杂系统工程的精髓：
+      <strong style="color:var(--text-primary);">在多样性中寻求统一，在约束中创造自由。</strong>
+    </p>
+  </div>
+</section>
+
+<footer class="footer">
+  Complex Systems Engineering · 小组作业1 · 机器增强的人及混合神经系统
+</footer>
+
+</body>
+</html>
