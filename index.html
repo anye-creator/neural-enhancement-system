@@ -353,6 +353,58 @@
     color: var(--text-secondary);
     font-size: 18px;
   }
+  /* 作业入口 */
+  .assignments {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px 80px;
+  }
+  .assign-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+  }
+  .assign-card {
+    display: block;
+    text-decoration: none;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .assign-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.2);
+  }
+  .assign-tag {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 12px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+  }
+  .assign-tag.done { background: rgba(16,185,129,0.2); color: var(--accent-green); }
+  .assign-tag.new { background: rgba(34,211,238,0.2); color: var(--accent-cyan); }
+  .assign-card h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--text-primary);
+  }
+  .assign-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .assign-link {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent-cyan);
+  }
   /* 页脚 */
   .footer {
     text-align: center;
@@ -880,6 +932,25 @@
 
 </section>
 
+<!-- 作业入口 -->
+<section class="assignments">
+  <h2 class="section-title">课程作业</h2>
+  <div class="assign-grid">
+    <div class="assign-card">
+      <span class="assign-tag done">作业 1 · 已完成</span>
+      <h3>机器增强的人及混合神经系统</h3>
+      <p>复杂系统工程六层架构全景解析：从战略任务到芯片级模块的人机深度融合系统。</p>
+      <span class="assign-link">当前页面</span>
+    </div>
+    <a class="assign-card" href="https://4mhk06pc7dq5a.doubao.link/app/app_17j8z14dekn?use_xbridge3=true&amp;loader_name=forest&amp;need_sec_link=1&amp;sec_link_scene=im&amp;theme=light" target="_blank" rel="noopener noreferrer">
+      <span class="assign-tag new">作业 2 · 新发布</span>
+      <h3>BRS 与 StRS 概念定义</h3>
+      <p>系统工程第 4 章概念定义：业务需求（BRS）与系统技术需求（StRS）网页交付。</p>
+      <span class="assign-link">打开作业 2 →</span>
+    </a>
+  </div>
+</section>
+
 <!-- 总结 -->
 <section style="max-width:1200px;margin:0 auto;padding:0 20px 80px;">
   <div style="background:linear-gradient(135deg, rgba(34,211,238,0.1), rgba(139,92,246,0.1));border:1px solid var(--border);border-radius:16px;padding:40px;text-align:center;">
@@ -893,7 +964,7 @@
 </section>
 
 <footer class="footer">
-  Complex Systems Engineering · 小组作业1 · 机器增强的人及混合神经系统
+  Complex Systems Engineering · 小组作业1：机器增强的人及混合神经系统 · 小组作业2：BRS 与 StRS 概念定义
 </footer>
 
 </body>
