@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>小组作业4 · 场景分层、运行设计条件与风险场景列表（CAMT 校园自动驾驶微循环接驳系统）</title>
+<meta name="description" content="系统工程课程小组作业4：在作业2 BRS/StRS、作业3 SyRS/初始架构/STPA 基线上，对 CAMT 所处运行环境进行场景分层，梳理各层场景要素，设定运行设计条件（运行设计范围、系统状态、人员状态），选取典型场景实例详细论述，并开展场景层安全风险分析、形成风险场景列表。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2314201D'/%3E%3Cpath d='M7 24V8m0 8h18M7 24h18' stroke='%23EDEEE9' stroke-width='2.2' fill='none'/%3E%3Ccircle cx='25' cy='16' r='3.4' fill='%239C3A24'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://miaoda.feishu.cn/fonts/css2?family=Noto+Serif+SC:wght@500;700;900&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+:root{
+  --paper:#EDEEE9; --paper-2:#F6F7F3; --ink:#14201D; --ink-2:#33423E; --muted:#6E7B76;
+  --line:#CFD5CB; --line-2:#DFE3DB; --blue:#1D4763; --blue-w:#E3EAF0;
+  --rust:#9C3A24; --rust-w:#F2E4DF; --amber:#A8752A; --green:#2F6B4F; --green-w:#E4EFE9;
+  --serif:"Noto Serif SC","Songti SC",Georgia,serif;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:"JetBrains Mono","SFMono-Regular",Consolas,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.78;-webkit-font-smoothing:antialiased}
+img,svg{max-width:100%}
+a{color:var(--blue);text-decoration:none;border-bottom:1px solid rgba(29,71,99,.3)}
+a:hover{color:var(--rust);border-bottom-color:rgba(156,58,36,.4)}
+.doc-head{position:relative;background:var(--ink);color:var(--paper);padding:64px 40px 52px;overflow:hidden}
+.doc-head::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(237,238,233,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(237,238,233,.055) 1px,transparent 1px);background-size:64px 64px;pointer-events:none}
+.doc-head .inner{position:relative;max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1fr 300px;gap:56px;align-items:end}
+.masthead{font-family:var(--mono);font-size:11px;letter-spacing:.18em;color:#9FADA6;margin-bottom:26px}
+.doc-head h1{font-family:var(--serif);font-weight:700;font-size:42px;line-height:1.28;margin:0 0 18px;letter-spacing:.01em}
+.doc-head h1 em{font-style:normal;color:#C9D6D2}
+.doc-head .sub{font-size:16px;line-height:1.85;color:#C3CDC8;max-width:40em;margin:0 0 26px}
+.doc-head .sys-name{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.06em;border:1px solid rgba(237,238,233,.35);padding:7px 12px;color:#E7EAE4}
+.spec-table{width:100%;border-collapse:collapse;font-size:12.5px;line-height:1.6;font-family:var(--mono)}
+.spec-table th,.spec-table td{border-top:1px solid rgba(237,238,233,.2);padding:9px 0;text-align:left;vertical-align:top}
+.spec-table th{color:#93A29B;font-weight:400;letter-spacing:.08em;width:38%}
+.spec-table td{color:#E4E8E1}
+.layout{max-width:1180px;margin:0 auto;padding:0 40px 96px;display:grid;grid-template-columns:210px 1fr;gap:64px;align-items:start}
+.toc{position:sticky;top:24px;padding:36px 0 0}
+.toc-label{font-family:var(--mono);font-size:10.5px;letter-spacing:.2em;color:var(--muted);margin-bottom:16px}
+.toc a{display:block;font-size:13px;line-height:1.5;color:var(--ink-2);border:0;padding:5px 0 5px 12px;border-left:2px solid transparent;transition:color .18s,border-color .18s}
+.toc a:hover{color:var(--rust);border-left-color:var(--rust)}
+.toc a .n{font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-right:7px}
+.toc .grp{font-size:11.5px;color:var(--muted);letter-spacing:.06em;margin:18px 0 4px;padding-left:12px}
+main{min-width:0;padding-top:8px}
+.chapter{padding:54px 0 0;scroll-margin-top:20px}
+.chapter + .chapter{border-top:1px solid var(--line);margin-top:56px}
+.ch-head{display:flex;align-items:baseline;gap:16px;margin-bottom:10px}
+.ch-num{font-family:var(--mono);font-size:12px;letter-spacing:.1em;color:var(--rust);padding-top:8px;flex:none}
+.chapter h2{font-family:var(--serif);font-weight:700;font-size:29px;line-height:1.4;margin:0;letter-spacing:.01em}
+.chapter h2 .en{display:block;font-family:var(--mono);font-weight:400;font-size:11.5px;letter-spacing:.10em;color:var(--muted);margin-top:8px}
+.lede{color:var(--ink-2);font-size:15.5px;margin:6px 0 30px;max-width:44em}
+h3{font-family:var(--sans);font-weight:700;font-size:17.5px;line-height:1.6;margin:40px 0 12px;letter-spacing:.01em}
+h3 .h3-n{font-family:var(--mono);font-weight:400;font-size:11.5px;color:var(--muted);margin-right:10px}
+h4{font-size:14px;font-weight:700;color:var(--blue);margin:24px 0 8px;letter-spacing:.02em}
+p{margin:0 0 16px;max-width:44em}
+strong{font-weight:700}
+.keyflag{display:inline-block;font-family:var(--mono);font-size:10px;letter-spacing:.12em;color:var(--rust);border:1px solid rgba(156,58,36,.45);padding:2px 7px;margin-left:12px;vertical-align:2px}
+.tbl-wrap{margin:22px 0 30px;overflow-x:auto}
+table.data{width:100%;border-collapse:collapse;table-layout:fixed;font-size:13px;line-height:1.66;background:var(--paper-2)}
+table.data caption{caption-side:top;text-align:left;font-family:var(--mono);font-size:11.5px;color:var(--muted);padding-bottom:9px;letter-spacing:.04em}
+table.data th{background:#DCE1D7;color:var(--ink);font-weight:700;text-align:left;padding:10px 10px;border:1px solid var(--line);font-size:12.5px}
+table.data td{padding:10px 10px;border:1px solid var(--line);vertical-align:top;word-break:break-word}
+table.data td.id{font-family:var(--mono);font-size:11.8px;color:var(--blue);letter-spacing:.02em}
+table.data tr.sub th{background:#EDEFE8;font-weight:500;color:var(--ink-2)}
+.note{font-size:12.5px;color:var(--muted);line-height:1.7;margin:-12px 0 28px;max-width:46em}
+.group-tag{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:#fff;background:var(--blue);padding:3px 8px;display:inline-block;margin:30px 0 2px}
+.group-tag.rust{background:var(--rust)}
+.group-tag.green{background:var(--green)}
+.box{border-top:2px solid var(--ink);background:var(--paper-2);padding:22px 24px 6px;margin:24px 0 30px}
+.box .box-t{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted);margin-bottom:14px}
+.box ul{margin:0 0 14px;padding-left:18px}
+.box li{margin:0 0 8px;font-size:14px;line-height:1.72;color:var(--ink-2)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:0;margin:24px 0 30px;border:1px solid var(--line);background:var(--paper-2)}
+.duo > div{padding:20px 22px}
+.duo > div:first-child{border-right:1px solid var(--line)}
+.duo h5{margin:0 0 4px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:400}
+.duo h5 b{font-family:var(--serif);font-size:16px;letter-spacing:0;color:var(--ink);display:block;margin-top:6px}
+.duo dl{margin:12px 0 0;font-size:13px;line-height:1.7}
+.duo dt{font-weight:700;color:var(--blue);font-size:12px;margin-top:9px}
+.duo dd{margin:2px 0 0;color:var(--ink-2)}
+.fig{background:var(--paper-2);border:1px solid var(--line);padding:22px;margin:26px 0}
+.fig svg{display:block;width:100%;height:auto}
+.figcap{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.6}
+.req{border:1px solid var(--line);background:var(--paper-2);border-left:3px solid var(--blue);border-radius:10px;padding:18px 20px;margin:14px 0}
+.req.rust{border-left-color:var(--rust)}
+.req.green{border-left-color:var(--green)}
+.req-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:12px;margin-bottom:6px}
+.req-id{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--blue)}
+.req.rust .req-id{color:var(--rust)}
+.req.green .req-id{color:var(--green)}
+.req-src{font-family:var(--mono);font-size:10.5px;color:var(--muted)}
+.req-stmt{font-size:14.5px;color:var(--ink);margin:4px 0 8px}
+.req-meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px 18px;font-size:12.5px;color:var(--ink-2)}
+.req-meta b{font-family:var(--mono);font-weight:400;color:var(--muted);margin-right:6px}
+.chip{display:inline-block;flex:none;white-space:nowrap;font-family:var(--mono);font-size:10px;line-height:1.5;padding:2px 5px;border:1px solid rgba(29,71,99,.55);color:var(--blue);background:#fff}
+.chip.neg{border-color:rgba(156,58,36,.6);color:var(--rust)}
+.chip.ok{border-color:rgba(47,107,79,.6);color:var(--green)}
+.matrix-note{display:flex;gap:22px;flex-wrap:wrap;font-family:var(--mono);font-size:11.5px;color:var(--muted);margin:14px 0 0}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:20px 0 26px}
+.flow div{background:var(--paper-2);border:1px solid var(--line);border-top:2px solid var(--blue);padding:12px 12px 14px;font-size:12.5px;line-height:1.65}
+.flow div .fn{font-family:var(--mono);font-size:10px;color:var(--rust);display:block;margin-bottom:5px}
+.flow div b{display:block;font-size:13.5px;color:var(--ink);margin-bottom:3px}
+.risk-h{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;padding:2px 7px;display:inline-block}
+.risk-h.hi{color:#fff;background:var(--rust)}
+.risk-h.mid{color:#fff;background:var(--amber)}
+.risk-h.lo{color:#fff;background:var(--green)}
+.foot{border-top:1px solid rgba(237,238,233,.2);background:var(--ink);color:#9FADA6;padding:40px;margin-top:0}
+.foot .inner{max-width:1180px;margin:0 auto;display:flex;flex-wrap:wrap;gap:28px;justify-content:space-between;font-size:12px;line-height:1.8}
+.foot .inner div{max-width:34em}
+.foot b{color:#DDE3DC;font-weight:500;display:block;margin-bottom:4px;font-family:var(--mono);font-size:11px;letter-spacing:.12em}
+@media (max-width:1100px){
+  .doc-head .inner{grid-template-columns:1fr;gap:34px;align-items:start}
+  .spec-table{max-width:420px}
+  .layout{grid-template-columns:1fr;gap:0;padding:0 28px 64px}
+  .toc{position:static;padding:26px 0 22px;border-bottom:1px solid var(--line)}
+  .toc a{display:inline-block;padding:4px 10px;border-left:0;border-bottom:2px solid transparent}
+  .toc a:hover{border-left:0;border-bottom-color:var(--rust)}
+  .toc .grp{display:none}
+}
+@media (max-width:760px){
+  table.data{min-width:560px}
+  .fig{overflow-x:auto}
+  .fig svg{min-width:560px}
+  .tbl-wrap::after{content:"← 左右滑动查看完整表格";display:block;font-size:10.5px;letter-spacing:.04em;color:var(--muted);padding:6px 2px 0;font-family:var(--mono)}
+  .fig::after{content:"← 左右滑动查看完整示意图";display:block;font-size:10.5px;letter-spacing:.04em;color:var(--muted);padding-top:8px;font-family:var(--mono)}
+  .doc-head{padding:44px 26px 36px}
+  .doc-head h1{font-size:30px}
+  .layout{padding:0 20px 56px}
+  .chapter h2{font-size:23px}
+  .duo{grid-template-columns:1fr}
+  .duo > div:first-child{border-right:0;border-bottom:1px solid var(--line)}
+  .flow{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header class="doc-head">
+  <div class="inner">
+    <div>
+      <div class="masthead">系统工程 · 小组作业4 · 运行环境与场景分析</div>
+      <h1>场景分层、运行设计条件<br>与<em>风险场景列表</em></h1>
+      <p class="sub">承接作业 2 的 BRS / StRS 基线与作业 3 的 SyRS、初始架构及 STPA 结论，从 CAMT 所处运行环境出发完成场景分层与要素梳理，设定系统正常运行的运行设计条件（运行设计范围、系统状态、人员状态），选取典型场景实例详细论述，并在场景层开展安全风险分析、形成可追溯的风险场景列表。</p>
+      <span class="sys-name">SoI：校园自动驾驶微循环接驳系统（CAMT）</span>
+    </div>
+    <table class="spec-table">
+      <tr><th>交付物</th><td>场景分层 · 场景要素 · ODC · 典型场景 · 风险场景列表</td></tr>
+      <tr><th>承接基线</th><td>BRS/StRS-CAMT v1.0；SyRS-CAMT v1.0；STPA（作业3）</td></tr>
+      <tr><th>分析输入</th><td>SC-1～SC-6；七状态 / 四模式；H-1～H-8；UCA-01～14</td></tr>
+      <tr><th>风险条目</th><td>RS-01 ～ RS-10 风险场景</td></tr>
+      <tr><th>版本 / 日期</th><td>v1.0 / 2026-11-26</td></tr>
+    </table>
+  </div>
+</header>
+<div class="layout">
+<nav class="toc" aria-label="目录">
+  <div class="toc-label">CONTENTS</div>
+  <div class="grp">基线衔接</div>
+  <a href="#baseline"><span class="n">01</span>基线、环境与本文定位</a>
+  <div class="grp">场景建模</div>
+  <a href="#taxonomy"><span class="n">02</span>场景分层体系</a>
+  <a href="#elements"><span class="n">03</span>各层场景要素梳理</a>
+  <div class="grp">运行设计条件</div>
+  <a href="#odc"><span class="n">04</span>运行设计条件（ODC）</a>
+  <a href="#scope"><span class="n">4.1</span>运行设计范围</a>
+  <a href="#sysstate"><span class="n">4.2</span>系统状态条件</a>
+  <a href="#humstate"><span class="n">4.3</span>人员状态条件</a>
+  <div class="grp">实例与风险</div>
+  <a href="#case"><span class="n">05</span>典型场景实例详述（SC-1）</a>
+  <a href="#risk"><span class="n">06</span>场景层安全风险分析</a>
+  <a href="#rslist"><span class="n">6.3</span>风险场景列表</a>
+  <div class="grp">追溯收尾</div>
+  <a href="#trace"><span class="n">07</span>追溯矩阵与评审自检</a>
+</nav>
+<main>
+<!--MAIN-BODY-->
+</main>
+</div>
+<footer class="foot">
+  <div class="inner">
+    <div><b>文档信息</b>系统工程 · 小组作业4 · 场景分层与运行设计条件<br>ODC-CAMT-v1.0 / 2026-11-26</div>
+    <div><b>依据</b>ISO/IEC/IEEE 15288:2023；29148:2018；STPA（Leveson）；SOTIF/场景工程通行方法；承接 BRS/StRS/SyRS-CAMT v1.0。</div>
+    <div><b>说明</b>带 † 数值为课程讨论设定值，非实测数据；本文用于小组讨论与课堂评审，不构成学校决策依据。</div>
+  </div>
+</footer>
+</body>
+</html>
